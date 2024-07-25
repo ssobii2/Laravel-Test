@@ -1,13 +1,14 @@
-import './bootstrap';
-
 document.addEventListener('DOMContentLoaded', function() {
     updateTotalValue();
 
-    document.getElementById('productForm').addEventListener('submit', function(e) {
+    const productForm = document.getElementById('productForm');
+    productForm.addEventListener('submit', addProduct);
+
+    function addProduct(e) {
         e.preventDefault();
-        let formData = new FormData(this);
+        let formData = new FormData(productForm);
         let data = {};
-        formData.forEach((value, key) => {data[key] = value});
+        formData.forEach((value, key) => { data[key] = value });
         fetch('/products', {
             method: 'POST',
             headers: {
@@ -32,8 +33,9 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             document.querySelector('#productTable tbody').prepend(newRow);
             updateTotalValue();
+            productForm.reset();
         });
-    });
+    }
 
     document.querySelector('#productTable').addEventListener('click', function(e) {
         if (e.target.classList.contains('editBtn')) {
@@ -47,11 +49,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('quantity').value = quantity;
             document.getElementById('price').value = price;
 
-            document.getElementById('productForm').onsubmit = function(e) {
+            productForm.removeEventListener('submit', addProduct);
+            productForm.onsubmit = function(e) {
                 e.preventDefault();
                 let formData = new FormData(this);
                 let data = {};
-                formData.forEach((value, key) => {data[key] = value});
+                formData.forEach((value, key) => { data[key] = value });
                 fetch(`/products/${id}`, {
                     method: 'PUT',
                     headers: {
@@ -67,6 +70,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     row.children[2].innerText = data.price;
                     row.children[4].innerText = data.quantity * data.price;
                     updateTotalValue();
+
+                    productForm.reset();
+                    productForm.onsubmit = addProduct;
                 });
             };
         }
